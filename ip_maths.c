@@ -93,6 +93,38 @@ void get_abcd_ip_format(unsigned int ip_address, char *output_buffer){
     inet_ntop(AF_INET,&ip_address,output_buffer,PREFIX_LEN);
 }
 
+void get_network_id(char *ip_addr, char mask, char *output_buffer){
+    //given an ip addr find the subnet id
+    //convert ip address to network byte order
+    //convert the mask to network byte order
+    //do a bitwise and of mask + ip address
+
+    unsigned int ip_addr_int = 0;
+    inet_pton(AF_INET,ip_addr,&ip_addr_int);
+    //now ensure int ip value is in network byte order
+    ip_addr_int = htonl(ip_addr_int);
+
+    //find out number of control bits in mask
+    unsigned int netmask = 0xFFFFFFFF;
+    char control_bits = MAX_MASK_LEN - mask;
+    //shift mask control_bits number of times to the left 
+    netmask = netmask << control_bits;
+
+    //now do a bitwise AND with the integer ip address
+    unsigned int sub_id = ip_addr_int & netmask;
+    //ensure it network byte order
+    sub_id = htonl(sub_id);
+    //convert to printable format
+    inet_ntop(AF_INET,&sub_id,output_buffer,PREFIX_LEN);
+    output_buffer[PREFIX_LEN] = '\0';
+}
+
+
+unsigned int get_subnet_cardinality(char mask){
+    //given netmask, determine the number of available interface IPs in the subnet
+    return pow(2,MAX_MASK_LEN-mask)-2;
+}
+
 int main(int argc, char **argv){
    // variables for question 1
     printf("testing getBroadcast \n");
@@ -126,6 +158,18 @@ int main(int argc, char **argv){
     unsigned int ip_address3 = 2058138165;
     get_abcd_ip_format(ip_address3,output_buffer3);
     printf("IP ADDRESS IN A.B.C.D FORMAT: %s\n",output_buffer3);
+    
+    printf("Testing Q4 \n");
+    char output_buffer4[PREFIX_LEN];
+    memset(output_buffer4,0,PREFIX_LEN);
+    char ip_address4[PREFIX_LEN];
+    memset(ip_address4,0,PREFIX_LEN);
+    memcpy(ip_address4,"192.168.2.10",strlen("192.169.2.10"));
+    get_network_id(ip_address4,mask,output_buffer4);
+    printf("Network ID = %s\n",output_buffer4);
+
+    printf("Testing Q5 \n");
+    printf("Max Ips: %u\n",get_subnet_cardinality(mask));
     
     return 0;
 
