@@ -119,6 +119,29 @@ void get_network_id(char *ip_addr, char mask, char *output_buffer){
     output_buffer[PREFIX_LEN] = '\0';
 }
 
+int check_ip_subnet_membership(char *network_id, char mask, char *check_ip){
+  //given network id, mask, and ip address check if given ip address is part of subnet
+  //step 1 is to determine the subnet id given ip address and mask
+  //step 2 is to compare 
+  unsigned int ip_addr_int = 0;
+  inet_pton(AF_INET,check_ip,&ip_addr_int);
+  ip_addr_int = htonl(ip_addr_int);
+  unsigned int netmask = 0xFFFFFFFF;
+  char control_bits = MAX_MASK_LEN - mask;
+  netmask = netmask << control_bits;
+  unsigned int sub_id = ip_addr_int & netmask;
+  //convert network id to network byte order
+  unsigned int network_id_bytes =0; 
+  inet_pton(AF_INET,network_id,&network_id_bytes); 
+  network_id_bytes = htonl(network_id_bytes);
+  if (network_id_bytes == sub_id){
+      return 0;
+  }
+  else{
+      return 1;
+  }
+}
+
 
 unsigned int get_subnet_cardinality(char mask){
     //given netmask, determine the number of available interface IPs in the subnet
@@ -164,13 +187,28 @@ int main(int argc, char **argv){
     memset(output_buffer4,0,PREFIX_LEN);
     char ip_address4[PREFIX_LEN];
     memset(ip_address4,0,PREFIX_LEN);
-    memcpy(ip_address4,"192.168.2.10",strlen("192.169.2.10"));
+    memcpy(ip_address4,"192.168.4.10",strlen("192.169.4.10"));
     get_network_id(ip_address4,mask,output_buffer4);
     printf("Network ID = %s\n",output_buffer4);
 
     printf("Testing Q5 \n");
     printf("Max Ips: %u\n",get_subnet_cardinality(mask));
     
+   
+    printf("Testing Q6 \n");
+    char network_id[PREFIX_LEN];
+    memset(network_id,0,PREFIX_LEN);
+    strncpy(network_id,"192.168.1.0",strlen("192.168.1.0"));
+    network_id[PREFIX_LEN]= '\0';
+    char ip_address6[PREFIX_LEN];
+    memset(ip_address6,0,PREFIX_LEN);
+    strncpy(ip_address6,"192.168.1.10",strlen("192.168.1.10"));
+
+    int result = check_ip_subnet_membership(network_id,mask,ip_address6);
+    printf("IP Subnet membership result : %s\n", result ==  0 ? "Is a member":"Is not a member!");
+   
+   
+   
     return 0;
 
 
