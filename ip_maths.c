@@ -35,8 +35,6 @@
 #define PREFIX_LEN 16
 #define MAX_MASK_LEN 32
 
-//function q1 void get_broadcast_address(char *ip_addr,char mask, char *output_buffer);
-//
 void get_broadcast_address(char *ip_addr, char mask, char *output_buffer){
  //take ip address in bits conver to unsigned int
  unsigned int ip_addr_int =0;
@@ -88,6 +86,13 @@ unsigned int get_ip_integer_equivalent(char *ip_address){
   return ip_addr_int;
 }
 
+void get_abcd_ip_format(unsigned int ip_address, char *output_buffer){
+    //ensure that the ip_address is in network byte order
+    ip_address = htonl(ip_address);
+    //convert ip to a printable format
+    inet_ntop(AF_INET,&ip_address,output_buffer,PREFIX_LEN);
+}
+
 int main(int argc, char **argv){
    // variables for question 1
     printf("testing getBroadcast \n");
@@ -115,7 +120,12 @@ int main(int argc, char **argv){
     printf("%x\n",res);
 
     
-    
+    printf("Testing Q3 \n");
+    char output_buffer3[PREFIX_LEN];
+    memset(output_buffer3,0,PREFIX_LEN);
+    unsigned int ip_address3 = 2058138165;
+    get_abcd_ip_format(ip_address3,output_buffer3);
+    printf("IP ADDRESS IN A.B.C.D FORMAT: %s\n",output_buffer3);
     
     return 0;
 
